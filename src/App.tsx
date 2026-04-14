@@ -8,6 +8,10 @@ import { Toaster } from '@/components/ui/sonner';
 import { Menu, Plus, ZoomIn, ZoomOut, Info, MapPin, X, Palette, ChevronDown } from 'lucide-react';
 import { CITIES, type CityConfig } from '@/data/cities';
 import type { Location } from '@/data/locations';
+import { getLocations } from 'zite-endpoints-sdk';
+import SeedRunner from '@/components/SeedRunner';
+
+const SEED_MODE = new URLSearchParams(window.location.search).get('seed') === '1';
 
 const ALL_CAPS = ['3D Printing', 'Resin Printing', 'Laser Cutting', 'CNC', 'PCB', 'Vinyl Cutting / Cricut', 'Electronics', 'Woodworking', 'Sewing'];
 const toHashtag = (cap: string) => '#' + cap.toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -29,6 +33,8 @@ function MapBtn({ onClick, children, active }: { onClick: () => void; children: 
 export default function App() {
   const [city, setCity] = useState<CityConfig>(() => CITIES.find(c => c.id === (localStorage.getItem('fab-city') ?? 'sf')) ?? CITIES[0]);
   const [cityMenuOpen, setCityMenuOpen] = useState(false);
+  const [locations, setLocations] = useState<Location[]>([]);
+  const [locationsLoading, setLocationsLoading] = useState(true);
   const [selected, setSelected] = useState<{ location: Location; x: number; y: number } | null>(null);
   const [drawerLocation, setDrawerLocation] = useState<Location | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -39,18 +45,41 @@ export default function App() {
   const [activeZip, setActiveZip] = useState('');
   const [zipOpen, setZipOpen] = useState(false);
   const [zipError, setZipError] = useState('');
-  const [theme, setTheme] = useState<'default' | 'pink'>(() =>
-    (localStorage.getItem('fab-theme') as 'default' | 'pink') ?? 'default'
+  const [theme, setTheme] = useState<'default' | 'pink' | 'catppuccin'>(() =>
+    (localStorage.getItem('fab-theme') as 'default' | 'pink' | 'catppuccin') ?? 'default'
   );
   const mapRef = useRef<any>(null);
 
   // Theme: apply class to <html> — defined outside @layer so it wins
   useEffect(() => {
     const html = document.documentElement;
+    html.classList.remove('theme-pink', 'theme-catppuccin');
     if (theme === 'pink') html.classList.add('theme-pink');
-    else html.classList.remove('theme-pink');
+    if (theme === 'catppuccin') html.classList.add('theme-catppuccin');
     localStorage.setItem('fab-theme', theme);
   }, [theme]);
+
+  function cycleTheme() {
+    setTheme(t => t === 'default' ? 'pink' : t === 'pink' ? 'catppuccin' : 'default');
+  }
+
+  // Fetch locations from Supabase when city changes
+  useEffect(() => {
+    let cancelled = false;
+    setLocationsLoading(true);
+    setLocations([]);
+    getLocations({ city: city.name })
+      .then(data => {
+        if (!cancelled) {
+          setLocations(data.locations as unknown as Location[]);
+          setLocationsLoading(false);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setLocationsLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, [city.name]);
 
   // City change: recenter map, reset filters
   function selectCity(c: CityConfig) {
@@ -66,7 +95,7 @@ export default function App() {
   }
 
   const filtered = useMemo(() => {
-    let result = city.locations;
+    let result = locations;
     if (selectedCaps.size > 0)
       result = result.filter(l => l.capabilities.some(c => selectedCaps.has(c)));
     if (activeZip) {
@@ -74,7 +103,7 @@ export default function App() {
       if (center) result = result.filter(l => haversineKm(center, [l.latitude, l.longitude]) <= 2.5);
     }
     return result;
-  }, [city, selectedCaps, activeZip]);
+  }, [locations, city, selectedCaps, activeZip]);
 
   function handleTagClick(cap: string) {
     setSelectedCaps(prev => { const s = new Set(prev); s.has(cap) ? s.delete(cap) : s.add(cap); return s; });
@@ -96,12 +125,15 @@ export default function App() {
     setZipOpen(false); setSelected(null);
   }
 
+  if (SEED_MODE) return <SeedRunner />;
+
   return (
     <div className="w-screen h-screen overflow-hidden relative bg-background" onClick={() => setCityMenuOpen(false)}>
       <MapView
         locations={filtered}
         initialCenter={city.center}
         initialZoom={city.zoom}
+        theme={theme}
         onMarkerClick={(loc, x, y) => { setDrawerOpen(false); setSelected({ location: loc, x, y }); }}
         onMapClick={() => { setSelected(null); setCityMenuOpen(false); }}
         onReady={map => { mapRef.current = map; }}
@@ -110,7 +142,7 @@ export default function App() {
       {/* Top-left: menu + theme toggle */}
       <div className="absolute top-4 left-4 z-[1001] flex flex-col -space-y-px">
         <MapBtn onClick={() => setInfoOpen(true)}><Menu size={17} strokeWidth={1.8} /></MapBtn>
-        <MapBtn onClick={() => setTheme(t => t === 'pink' ? 'default' : 'pink')} active={theme === 'pink'}>
+        <MapBtn onClick={cycleTheme} active={theme !== 'default'}>
           <Palette size={15} strokeWidth={1.8} />
         </MapBtn>
       </div>
@@ -131,7 +163,6 @@ export default function App() {
                 <button key={c.id} onClick={() => selectCity(c)}
                   className={`w-full px-4 py-2 text-xs text-left transition-colors ${c.id === city.id ? 'font-semibold text-foreground bg-muted' : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'}`}>
                   {c.name}
-                  {c.locations.length === 0 && <span className="ml-2 text-[9px] text-muted-foreground/50">coming soon</span>}
                 </button>
               ))}
             </div>
@@ -139,21 +170,21 @@ export default function App() {
         </div>
       </div>
 
-      {/* Top-right: suggest (hidden when drawer open to avoid overlap) */}
+      {/* Top-right: suggest */}
       {!drawerOpen && (
         <div className="absolute top-4 right-4 z-[1001]">
           <MapBtn onClick={() => setSuggestOpen(true)}><Plus size={18} strokeWidth={1.8} /></MapBtn>
         </div>
       )}
 
-      {/* Bottom-right: zoom + info (shift left when drawer open) */}
+      {/* Bottom-right: zoom + info */}
       <div className={`absolute bottom-8 z-[1001] flex flex-col -space-y-px transition-all duration-300 ${drawerOpen ? 'right-[calc(440px+1rem)]' : 'right-4'}`}>
         <MapBtn onClick={() => mapRef.current?.zoomIn()}><ZoomIn size={15} strokeWidth={1.8} /></MapBtn>
         <MapBtn onClick={() => mapRef.current?.zoomOut()}><ZoomOut size={15} strokeWidth={1.8} /></MapBtn>
         <MapBtn onClick={() => setInfoOpen(true)}><Info size={15} strokeWidth={1.8} /></MapBtn>
       </div>
 
-      {/* Bottom-left: ZIP search (shift up when chips active) */}
+      {/* Bottom-left: ZIP search */}
       <div className="absolute bottom-8 left-4 z-[1001] flex flex-col items-start gap-2">
         {zipOpen && (
           <div className="bg-background/95 backdrop-blur-sm border border-border rounded-xl p-3 shadow-lg w-52">
@@ -180,8 +211,17 @@ export default function App() {
         </div>
       </div>
 
-      {/* Empty state for sparse cities */}
-      {filtered.length === 0 && city.locations.length === 0 && (
+      {/* Loading indicator */}
+      {locationsLoading && (
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[999] pointer-events-none">
+          <div className="bg-background/90 backdrop-blur-sm border border-border rounded-xl px-4 py-2.5 text-xs text-muted-foreground font-medium shadow">
+            Loading locations…
+          </div>
+        </div>
+      )}
+
+      {/* Empty state */}
+      {!locationsLoading && filtered.length === 0 && locations.length === 0 && (
         <div className="absolute inset-0 flex items-center justify-center z-[999] pointer-events-none">
           <div className="bg-background/90 backdrop-blur-sm border border-border rounded-2xl px-6 py-5 text-center max-w-xs shadow-lg">
             <p className="font-semibold text-foreground mb-1">{city.name} is coming soon</p>
@@ -202,7 +242,7 @@ export default function App() {
         </div>
       )}
 
-      {/* Capability filter chips — hashtag style */}
+      {/* Capability filter chips */}
       <div className="absolute bottom-0 left-0 right-0 z-[998] pointer-events-none">
         <div className="pointer-events-auto px-3 pb-3 pt-2">
           <div className="flex gap-1.5 overflow-x-auto pb-0.5" style={{ scrollbarWidth: 'none' }}>
@@ -239,7 +279,7 @@ export default function App() {
         onClose={() => setDrawerOpen(false)} onTagClick={handleTagClick} selectedCaps={selectedCaps} />
 
       <InfoPanel open={infoOpen} onClose={() => setInfoOpen(false)} onSuggest={() => { setInfoOpen(false); setSuggestOpen(true); }} />
-      <SuggestModal open={suggestOpen} onClose={() => setSuggestOpen(false)} />
+      <SuggestModal open={suggestOpen} onClose={() => setSuggestOpen(false)} city={city.name} />
       <Toaster position="top-center" />
     </div>
   );

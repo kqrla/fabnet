@@ -1,15 +1,8 @@
-import type { Location } from './locations';
-import sfLocations from './sf';
-import laLocations from './la';
-import nycLocations from './nyc';
-import bostonLocations from './boston';
-
 export interface CityConfig {
   id: string;
   name: string;
   center: [number, number];
   zoom: number;
-  locations: Location[];
   zips: Record<string, [number, number]>;
 }
 
@@ -50,8 +43,8 @@ const BOSTON_ZIPS: Record<string, [number, number]> = {
 };
 
 export const CITIES: CityConfig[] = [
-  { id: 'sf', name: 'San Francisco', center: [37.762, -122.435], zoom: 13, locations: sfLocations, zips: SF_ZIPS },
-  { id: 'la', name: 'Los Angeles', center: [34.052, -118.280], zoom: 12, locations: laLocations, zips: LA_ZIPS },
-  { id: 'nyc', name: 'New York City', center: [40.712, -74.006], zoom: 12, locations: nycLocations, zips: NYC_ZIPS },
-  { id: 'boston', name: 'Boston', center: [42.361, -71.057], zoom: 13, locations: bostonLocations, zips: BOSTON_ZIPS },
+  { id: 'sf', name: 'San Francisco', center: [37.762, -122.435], zoom: 13, zips: SF_ZIPS },
+  { id: 'la', name: 'Los Angeles', center: [34.052, -118.280], zoom: 12, zips: LA_ZIPS },
+  { id: 'nyc', name: 'New York City', center: [40.712, -74.006], zoom: 12, zips: NYC_ZIPS },
+  { id: 'boston', name: 'Boston', center: [42.361, -71.057], zoom: 13, zips: BOSTON_ZIPS },
 ];

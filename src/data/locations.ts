@@ -3,7 +3,7 @@ export interface Location {
   name: string;
   latitude: number;
   longitude: number;
-  type: 'Library' | 'Makerspace';
+  type: 'Library' | 'Makerspace' | string;
   capabilities: string[];
   membershipCost: string;
   sourceLink: string;

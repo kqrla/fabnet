@@ -1,5 +1,5 @@
 
-@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700&family=Fira+Code:wght@300;400;500;600;700&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -55,8 +55,8 @@
     --sidebar-ring: 217.2 91.2% 59.8%;
 
     /* Font families */
-    --font-sans: 'Inter', 'Helvetica Neue', sans-serif;
-    --font-mono: 'Courier New', monospace;
+    --font-sans: 'Work Sans', sans-serif;
+    --font-mono: 'Fira Code', monospace;
 
     /* Shadow configuration */
     --shadow-x: 0px;
@@ -89,6 +89,30 @@
 }
 
 /* ── Pink theme — outside @layer so it always overrides base ── */
+html.theme-catppuccin {
+  --background: 240 21% 15%;
+  --foreground: 226 64% 88%;
+  --muted: 237 16% 23%;
+  --muted-foreground: 228 24% 60%;
+  --popover: 240 21% 17%;
+  --popover-foreground: 226 64% 88%;
+  --border: 237 16% 28%;
+  --input: 237 16% 28%;
+  --card: 240 21% 17%;
+  --card-foreground: 226 64% 88%;
+  --primary: 267 84% 81%;
+  --primary-foreground: 240 21% 15%;
+  --secondary: 237 16% 23%;
+  --secondary-foreground: 226 64% 88%;
+  --accent: 316 72% 76%;
+  --accent-foreground: 240 21% 15%;
+  --destructive: 343 81% 75%;
+  --destructive-foreground: 240 21% 15%;
+  --ring: 267 84% 81%;
+  --lib-color: 189 71% 73%;
+  --make-color: 316 72% 76%;
+}
+
 html.theme-pink {
   --background: 350 35% 97%;
   --foreground: 340 22% 16%;
@@ -98,7 +122,7 @@ html.theme-pink {
   --popover-foreground: 340 22% 16%;
   --border: 340 20% 84%;
   --input: 340 20% 84%;
-  --card: 0 0% 100%;
+  --card: 350 35% 98%;
   --card-foreground: 340 22% 16%;
   --primary: 338 55% 55%;
   --primary-foreground: 0 0% 100%;
@@ -123,10 +147,10 @@ html.theme-pink {
   }
 }
 
-/* Leaflet hover tooltip */
+/* Leaflet hover tooltip — uses CSS variables so themes work */
 .fab-hover-tooltip {
-  background: white !important;
-  border: 1px solid rgba(0,0,0,0.08) !important;
+  background: hsl(var(--card)) !important;
+  border: 1px solid hsl(var(--border)) !important;
   border-radius: 10px !important;
   box-shadow: 0 6px 20px rgba(0,0,0,0.14) !important;
   padding: 8px 13px !important;
@@ -134,13 +158,23 @@ html.theme-pink {
   pointer-events: none !important;
 }
 .fab-hover-tooltip::before {
-  border-top-color: white !important;
+  border-top-color: hsl(var(--card)) !important;
 }
 .leaflet-tooltip-top.fab-hover-tooltip {
   margin-bottom: 6px;
 }
-.fab-tt-name { font-size: 12px; font-weight: 700; color: #1a1a2e; line-height: 1.3; }
-.fab-tt-type { font-size: 10px; color: rgba(26,26,46,0.52); margin-top: 2px; font-weight: 500; }
+.fab-tt-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: hsl(var(--foreground));
+  line-height: 1.3;
+}
+.fab-tt-type {
+  font-size: 10px;
+  color: hsl(var(--muted-foreground));
+  margin-top: 2px;
+  font-weight: 500;
+}
 
 /* Leaflet map fixes */
 .leaflet-container {
