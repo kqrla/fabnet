@@ -20,7 +20,6 @@ export default function LocationDrawer({ location, open, onClose, onTagClick, se
 
   return (
     <Sheet open={open} onOpenChange={v => !v && onClose()}>
-      {/* hideCloseButton via className trick — we render our own */}
       <SheetContent side="right" className="w-full sm:w-[440px] p-0 flex flex-col overflow-hidden [&>button]:hidden">
         {/* Color stripe + header */}
         <div className="flex-shrink-0" style={{ background: `hsl(var(${colorVar}))` }}>
@@ -42,7 +41,6 @@ export default function LocationDrawer({ location, open, onClose, onTagClick, se
         </div>
 
         <div className="flex-1 overflow-y-auto px-6 py-4 space-y-5">
-          {/* Tags */}
           {(location.capabilities?.length ?? 0) > 0 && (
             <div>
               <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">Equipment</p>

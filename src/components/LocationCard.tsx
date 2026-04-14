@@ -55,7 +55,6 @@ export default function LocationCard({ location, x, y, onClose, onTagClick, onMo
 
         {/* Body */}
         <div className="px-3 py-2.5 space-y-2.5">
-          {/* Clickable hashtag tags */}
           {(location.capabilities?.length ?? 0) > 0 && (
             <div className="flex flex-wrap gap-1">
               {location.capabilities!.map(cap => {
@@ -83,7 +82,6 @@ export default function LocationCard({ location, x, y, onClose, onTagClick, onMo
             </p>
           )}
 
-          {/* More info → opens drawer */}
           <button
             onClick={onMoreInfo}
             className="flex items-center gap-1 text-[11px] font-semibold transition-opacity hover:opacity-70 w-full justify-end pt-0.5"

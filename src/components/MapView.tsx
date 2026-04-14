@@ -5,6 +5,7 @@ interface Props {
   locations: Location[];
   initialCenter?: [number, number];
   initialZoom?: number;
+  theme?: 'default' | 'pink' | 'catppuccin' | 'rose';
   onMarkerClick: (location: Location, x: number, y: number) => void;
   onMapClick: () => void;
   onReady?: (map: any) => void;
@@ -27,12 +28,9 @@ function ensureLeaflet(cb: () => void) {
   document.head.appendChild(script);
 }
 
-// BookOpen paths for Library
 const BOOK_SVG = `<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>`;
-// Wrench paths for Makerspace
 const WRENCH_SVG = `<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>`;
 
-// Pin colors: makerspace = deep rose, library = teal
 const PIN_COLORS: Record<string, string> = {
   Library: '#4D8FA0',
   Makerspace: '#B85070',
@@ -41,7 +39,6 @@ const PIN_COLORS: Record<string, string> = {
 function buildPinSvg(type: string) {
   const color = PIN_COLORS[type] ?? '#888';
   const icon = type === 'Library' ? BOOK_SVG : WRENCH_SVG;
-  // 40×54 viewBox. Circle center (20,20) r11. Icon 24×24 → scale 0.58 ≈ 14px, translate(13,13)
   return `<svg viewBox="0 0 40 54" width="40" height="54" xmlns="http://www.w3.org/2000/svg">
     <ellipse cx="20" cy="52" rx="6" ry="2.5" fill="rgba(0,0,0,0.18)"/>
     <path d="M20 1C9.507 1 1 9.507 1 20C1 33 20 52 20 52C20 52 39 33 39 20C39 9.507 30.493 1 20 1Z" fill="${color}"/>
@@ -60,7 +57,9 @@ function makeIcon(L: any, type: string) {
   });
 }
 
-export default function MapView({ locations, initialCenter, initialZoom, onMarkerClick, onMapClick, onReady }: Props) {
+const PINK_FILTER = 'hue-rotate(305deg) saturate(1.1) brightness(1.06) contrast(0.92)';
+
+export default function MapView({ locations, initialCenter, initialZoom, theme, onMarkerClick, onMapClick, onReady }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
@@ -73,20 +72,17 @@ export default function MapView({ locations, initialCenter, initialZoom, onMarke
   useEffect(() => { onMarkerClickRef.current = onMarkerClick; }, [onMarkerClick]);
   useEffect(() => { onReadyRef.current = onReady; }, [onReady]);
 
+  // Initialize map
   useEffect(() => {
     ensureLeaflet(() => {
       setLeafletLoaded(true);
       if (mapRef.current || !containerRef.current) return;
       const L = (window as any).L;
       const map = L.map(containerRef.current, { center: initialCenter ?? [37.762, -122.435], zoom: initialZoom ?? 13, zoomControl: false });
-      // CartoDB Positron — minimal, clean tiles
       L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
         attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/">CARTO</a>',
         maxZoom: 19,
       }).addTo(map);
-      // Pink tint over the minimal base
-      const tp = map.getPane('tilePane') as HTMLElement;
-      if (tp) tp.style.filter = 'hue-rotate(305deg) saturate(1.1) brightness(1.06) contrast(0.92)';
       map.on('click', () => onMapClickRef.current());
       mapRef.current = map;
       onReadyRef.current?.(map);
@@ -94,6 +90,15 @@ export default function MapView({ locations, initialCenter, initialZoom, onMarke
     return () => { if (mapRef.current) { mapRef.current.remove(); mapRef.current = null; } };
   }, []);
 
+  // Reactively apply/remove theme filter on tile pane
+  useEffect(() => {
+    if (!mapRef.current) return;
+    const tp = mapRef.current.getPane?.('tilePane') as HTMLElement | null;
+    if (!tp) return;
+    tp.style.filter = (theme === 'pink' || theme === 'rose') ? PINK_FILTER : '';
+  }, [theme, leafletLoaded]);
+
+  // Update markers
   useEffect(() => {
     if (!leafletLoaded || !mapRef.current) return;
     const L = (window as any).L;
@@ -103,12 +108,10 @@ export default function MapView({ locations, initialCenter, initialZoom, onMarke
     locations.forEach(loc => {
       if (loc.latitude == null || loc.longitude == null) return;
       const marker = L.marker([loc.latitude, loc.longitude], { icon: makeIcon(L, loc.type ?? '') });
-      // Hover: show name + type tooltip
       marker.bindTooltip(
         `<div class="fab-tt-name">${loc.name ?? ''}</div><div class="fab-tt-type">${loc.type ?? ''}</div>`,
         { direction: 'top', offset: [0, -52], className: 'fab-hover-tooltip', sticky: false }
       );
-      // Click: open detail card
       marker.on('click', (e: any) => {
         e.originalEvent?.stopPropagation();
         const pt = map.latLngToContainerPoint([loc.latitude, loc.longitude]);

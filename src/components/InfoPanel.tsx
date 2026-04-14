@@ -10,14 +10,13 @@ interface Props {
 
 const CAPABILITIES = [
   '3D Printing', 'Resin Printing', 'CNC', 'PCB',
-  'Laser Cutting', 'Vinyl Cutting / Cricut', 'Electronics', 'Woodworking',
+  'Laser Cutting', 'Vinyl Cutting / Cricut', 'Electronics', 'Woodworking', 'Sewing',
 ];
 
-// Teardrop pin SVGs for legend
 function LibraryPin() {
   return (
     <svg viewBox="0 0 30 40" width="20" height="27" xmlns="http://www.w3.org/2000/svg">
-      <path d="M15 0C6.716 0 0 6.716 0 15C0 24.941 15 40 15 40C15 40 30 24.941 30 15C30 6.716 23.284 0 15 0Z" fill="#111"/>
+      <path d="M15 0C6.716 0 0 6.716 0 15C0 24.941 15 40 15 40C15 40 30 24.941 30 15C30 6.716 23.284 0 15 0Z" fill="hsl(var(--lib-color))"/>
       <g transform="translate(6,5) scale(0.75)" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none">
         <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
         <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
@@ -29,7 +28,7 @@ function LibraryPin() {
 function MakerspacePin() {
   return (
     <svg viewBox="0 0 30 40" width="20" height="27" xmlns="http://www.w3.org/2000/svg">
-      <path d="M15 0C6.716 0 0 6.716 0 15C0 24.941 15 40 15 40C15 40 30 24.941 30 15C30 6.716 23.284 0 15 0Z" fill="#111"/>
+      <path d="M15 0C6.716 0 0 6.716 0 15C0 24.941 15 40 15 40C15 40 30 24.941 30 15C30 6.716 23.284 0 15 0Z" fill="hsl(var(--make-color))"/>
       <g transform="translate(6,5) scale(0.75)" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none">
         <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
       </g>
@@ -44,7 +43,7 @@ export default function InfoPanel({ open, onClose, onSuggest }: Props) {
         <SheetHeader>
           <SheetTitle className="font-black uppercase tracking-tight text-xl">fabnetwork</SheetTitle>
           <p className="text-sm text-muted-foreground leading-relaxed">
-            Discover fabrication-capable locations in San Francisco — makerspaces, public libraries with maker equipment, and labs.
+            Discover fabrication-capable locations — makerspaces, public libraries with maker equipment, and labs across multiple cities.
           </p>
         </SheetHeader>
 
@@ -55,7 +54,7 @@ export default function InfoPanel({ open, onClose, onSuggest }: Props) {
               <LibraryPin />
               <div>
                 <p className="text-sm font-medium">Library</p>
-                <p className="text-xs text-muted-foreground">SFPL branches with maker tech</p>
+                <p className="text-xs text-muted-foreground">Public libraries with maker tech</p>
               </div>
             </div>
             <div className="flex items-center gap-3">

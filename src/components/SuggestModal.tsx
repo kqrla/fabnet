@@ -4,15 +4,16 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { submitSuggestion } from 'zite-endpoints-sdk';
+import { submitLocationSuggestion } from '@/lib/api';
 import { toast } from 'sonner';
 
 interface Props {
   open: boolean;
   onClose: () => void;
+  city: string;
 }
 
-export default function SuggestModal({ open, onClose }: Props) {
+export default function SuggestModal({ open, onClose, city }: Props) {
   const [form, setForm] = useState({ locationName: '', suggestedChange: '', sourceUrl: '', notes: '' });
   const [loading, setLoading] = useState(false);
 
@@ -25,7 +26,7 @@ export default function SuggestModal({ open, onClose }: Props) {
     if (!form.locationName || !form.suggestedChange || !form.sourceUrl) return;
     setLoading(true);
     try {
-      await submitSuggestion(form);
+      await submitLocationSuggestion({ ...form, city });
       toast('Thanks! Your suggestion has been received.');
       setForm({ locationName: '', suggestedChange: '', sourceUrl: '', notes: '' });
       onClose();
