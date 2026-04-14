@@ -1,0 +1,34 @@
+{
+  "version": "1.0",
+  "generatedAt": "2026-04-14T20:02:06.145Z",
+  "integrations": {
+    "fabnetwork": {
+      "idMappings": {
+        "base": "79ab7da95c0f2c84",
+        "tables": {
+          "Locations": "t2FKMNXKUPb",
+          "Submissions": "t6WXipCFc8F"
+        },
+        "fields": {
+          "Locations": {
+            "name": "fgi43WaESLM",
+            "latitude": "fvzpa41oivd",
+            "longitude": "frrx7TWuvKM",
+            "type": "fdekTmnyFGX",
+            "capabilities": "f6RESbEgSi9",
+            "membershipCost": "fmz9aNm5xyF",
+            "sourceLink": "f1SzgFQHBXB",
+            "notes": "faj6ZzPtKf1"
+          },
+          "Submissions": {
+            "locationName": "fw2AmfGgeNb",
+            "suggestedChange": "fpLa13ikD5S",
+            "sourceUrl": "fpxzQFrNXdc",
+            "notes": "fb1LRutrLSv",
+            "submittedAt": "fcdFCd89ju1"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "integrations": {
+    "fabnetwork": {
+      "type": "databases",
+      "connectionId": null,
+      "base": "Fabnetwork"
+    }
+  }
+}
